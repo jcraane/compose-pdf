@@ -146,8 +146,12 @@ class PdfScope(private val document: PdfDocument) {
         // Add root components
         componentsToRender.addAll(rootComponents)
 
-        // Process layout components
-        rootComponents.forEach { (component, position) ->
+        // Process layout components recursively
+        val processedComponents = mutableListOf<Pair<Measurable, Position>>()
+        while (componentsToRender.isNotEmpty()) {
+            val (component, position) = componentsToRender.removeAt(0)
+            processedComponents.add(component to position)
+
             when (component) {
                 is dev.jamiecraane.vibe.compose.pdf.components.Column -> {
                     componentsToRender.addAll(component.placeChildren(position))
@@ -159,7 +163,7 @@ class PdfScope(private val document: PdfDocument) {
         }
 
         // Render all components
-        componentsToRender.forEach { (component, position) ->
+        processedComponents.forEach { (component, position) ->
             renderComponent(component, position, page, pdfBoxDoc)
         }
     }
